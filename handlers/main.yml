@@ -1,0 +1,15 @@
+---
+# handlers file for /home/nfofilov/Ansible/roles/bareos_client
+- name: reload bareos-dir
+  service: 
+    name: bareos-dir
+    state: restarted
+
+- name: restart bareos-fd
+  service: name=bareos-fd state=restarted
+
+- name: reload bareos-fd
+  service: name=bareos-fd state=restarted
+
+- name: firewalld reload
+  command: firewall-cmd --reload

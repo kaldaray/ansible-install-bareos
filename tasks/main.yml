@@ -1,0 +1,3 @@
+---
+- name: Определение клиент/сервер
+  include_tasks: "{{ bareos_mode }}.yml"

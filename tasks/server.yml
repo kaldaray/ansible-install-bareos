@@ -1,0 +1,28 @@
+---
+# Добавление пользователя на Bareos server
+- name: Bareos server. Добавление Пользователя
+  template: 
+    src: "{{ item.src }}" 
+    dest: "{{ item.dest }}" 
+    mode: 0640 
+    owner: bareos
+    group: bareos
+  with_items:
+      # - { src: 'templates/setup_client_on_server/bareos-dir.conf.j2', dest: '/etc/bareos/bareos-dir-export/client/{{ client_hostname }}/bareos-fd.d/director/bareos-dir.conf' }
+      - { src: 'templates/setup_client_on_server/client-name-fd.conf.j2', dest: '/etc/bareos/bareos-dir.d/client/{{ client_hostname }}.conf' }
+
+# Добавление задания на Bareos server
+- name: Bareos server. Добавление задания
+  template: 
+    src: "{{ item.src }}" 
+    dest: "{{ item.dest }}" 
+    mode: 0640 
+    owner: bareos
+    group: bareos
+  with_items:
+      - { src: 'templates/setup_client_job_on_server/job.conf.j2', dest: '/etc/bareos/bareos-dir.d/job/{{ client_hostname }}.conf' }
+  notify: reload bareos-dir
+    # - reload bareos-fd
+    # - reload bareos-sd
+      # - { src: 'templates/setup_client_job_on_server/job.conf.j2', dest: '/etc/bareos/bareos-dir.d/client/{{ client_hostname }}.conf' }
+      # - { src: 'templates/setup_client_job_on_server/schedule.conf.j2', dest: '/etc/bareos/bareos-dir.d/client/{{ client_hostname }}.conf' }

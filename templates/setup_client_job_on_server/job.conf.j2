@@ -1,0 +1,61 @@
+Job {
+    # Имя обязательно
+    Name = "{{ ansible_hostname }}_dir"
+    JobDefs = "{{ ansible_hostname }}_dir_jobdefs"
+    Client = {{ ansible_hostname }}
+    FileSet = "{{ ansible_hostname }}_fileset"
+    Schedule = "{{ ansible_hostname }}_schedule"
+}
+
+JobDefs {
+    # Имя Jobdefs
+    Name = "{{ ansible_hostname }}_dir_jobdefs"
+    # Тип, можно использовать backup/restore/verify
+    Type = Backup
+    # Настройка по-умолчанижю
+    # Можно использоватеть Full/Differential(since last full)/Incremental(since last incremental)
+    Level = Incremental
+    # Набор файлов
+    FileSet = "{{ ansible_hostname }}_fileset"
+    # Где будет хранится
+    Storage = File
+    # Отчеты
+    Messages = Standard
+    # Хранение пула
+    Pool = Incremental
+    # чем выше приоритет значения, тем ниже оно будет помещено в очередь
+    # Самые важные job priority=1 будут стартовать первыми
+    Priority = 10
+    # файл начальной загрузки хранит "журнал" всех резервных копий и перезаписывается каждый раз, когда
+    # сделана полная резервная копия, ее можно использовать при восстановлении
+    Write Bootstrap = "/var/lib/bareos/%c.bsr"
+
+    Full Backup Pool = Full
+    Differential Backup Pool = Differential
+    Incremental Backup Pool = Incremental
+
+}
+
+FileSet {
+    Name = "{{ ansible_hostname }}_fileset"
+    Include {
+        Options {
+            signature = MD5
+            compression = gzip
+        }
+        # Пример
+        # /opt/tomcat,/opt
+        File = {{ backup_fileset }}
+    }
+}
+
+Schedule {
+  # Имя задания (обязательно)
+  Name = "{{ ansible_hostname }}_schedule"
+
+  # Время запуска
+  # Пример 
+  # Run = daily at 02:00
+  Run = daily at {{ schedule_time }}
+
+}

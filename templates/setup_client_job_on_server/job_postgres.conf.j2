@@ -1,0 +1,73 @@
+Job {
+    # Имя обязательно
+    Name = "{{ ansible_hostname }}_postgres_backup"
+    JobDefs = "DefaultJob"
+    Client = {{ ansible_host }}
+    Level = Full
+    FileSet = "{{ ansible_hostname }}_fileset"
+    Schedule = "{{ ansible_hostname }}_postgres_schedule"
+
+    # This creates a dump of our database in the local filesystem on the client
+    RunScript {
+        FailJobOnError = Yes
+        RunsOnClient = Yes
+        RunsWhen = Before
+        Command = "su postgres -c pg_dump {{ pg_db_name }} {{ pg_dump_args|join(" ") }}> /var/tmp/postgresql_dump.sql"
+    }
+
+    # This deletes the dump in our local filesystem on the client
+    RunScript {
+        RunsOnSuccess = Yes
+        RunsOnClient = Yes
+        RunsWhen = After
+        Command = "rm /var/tmp/postgresql_dump.sql"
+    }
+}
+
+JobDefs {
+    # Имя Jobdefs
+    Name = "{{ ansible_hostname }}_postgres_jobdefs"
+    # Тип, можно использовать backup/restore/verify
+    Type = Backup
+    # Настройка по-умолчанижю
+    # Можно использоватеть Full/Differential(since last full)/Incremental(since last incremental)
+    Level = Incremental
+    # Где будет хранится
+    Storage = File
+    # Отчеты
+    Messages = Standard
+    # Хранение пула
+    Pool = Incremental
+    # чем выше приоритет значения, тем ниже оно будет помещено в очередь
+    # Самые важные job priority=1 будут стартовать первыми
+    Priority = 10
+    # файл начальной загрузки хранит "журнал" всех резервных копий и перезаписывается каждый раз, когда
+    # сделана полная резервная копия, ее можно использовать при восстановлении
+    Write Bootstrap = "/var/lib/bareos/%c.bsr"
+
+    Full Backup Pool = Full
+    Differential Backup Pool = Differential
+    Incremental Backup Pool = Incremental
+
+}
+
+FileSet {
+    Name = "{{ ansible_hostname }}_postgres_fileset"
+    Include {
+        Options {
+            signature = MD5
+            compression = gzip
+        }
+        # database dump file
+        File = "/var/tmp/postgresql_dump.sql"
+    }
+}
+
+Schedule {
+  # Имя задания (обязательно)
+  Name = "{{ ansible_hostname }}_postgres_schedule"
+
+  # Время запуска
+  Run = daily at {{ schedule_time }}
+
+}

@@ -1,0 +1,28 @@
+JobDefs {
+    # Имя Jobdefs
+    Name = ""{{ ansible_host }}"_dir_jobdefs"
+    # Тип, можно использовать backup/restore/verify
+    Type = Backup
+    # Настройка по-умолчанижю
+    # Можно использоватеть Full/Differential(since last full)/Incremental(since last incremental)
+    Level = Incremental
+    # Набор файлов
+    FileSet = ""{{ ansible_host }}"_fileset"
+    # Где будет хранится
+    Storage = File
+    # Отчеты
+    Messages = Standard
+    # Хранение пула
+    Pool = Incremental
+    # чем выше приоритет значения, тем ниже оно будет помещено в очередь
+    # Самые важные job priority=1 будут стартовать первыми
+    Priority = 10
+    # файл начальной загрузки хранит "журнал" всех резервных копий и перезаписывается каждый раз, когда
+    # сделана полная резервная копия, ее можно использовать при восстановлении
+    Write Bootstrap = "/var/lib/bareos/%c.bsr"
+
+    Full Backup Pool = Full
+    Differential Backup Pool = Differential
+    Incremental Backup Pool = Incremental
+
+}

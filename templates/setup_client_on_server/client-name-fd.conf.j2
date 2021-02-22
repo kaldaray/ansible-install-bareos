@@ -1,0 +1,6 @@
+# {{ client_hostname }} Client (File Services) to backup
+Client {
+    Name = {{ ansible_hostname }}
+    Address = {{ ansible_host }}
+    Password = "{{ backup_storage_pass }}"
+}

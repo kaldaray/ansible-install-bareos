@@ -1,0 +1,66 @@
+---
+- name: Получение информации о службах сервера
+  service_facts:
+  register: services_state
+# Variable setup.
+- name: Импорт переменных
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- name: RedHat | Импорт переменных
+  include_vars: "{{ ansible_os_family }}-{{ ansible_distribution_version.split('.')[0] }}.yml"
+  when:
+  - ansible_os_family == 'RedHat'
+  - ansible_distribution != 'Fedora'
+
+# Setup/install tasks.
+- include_tasks: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat'
+
+- include_tasks: setup-Ubuntu.yml
+  when: ansible_distribution == 'Ubuntu'
+
+ 
+- name: "Creating client directory"
+  file:
+    path: /etc/bareos/bareos-fd.d/client
+    state: directory
+    owner: bareos
+    group: bareos
+    mode: 0750
+    recurse: yes
+
+- name: "Creating director directory"
+  file:
+    path: /etc/bareos/bareos-fd.d/director
+    state: directory
+    owner: bareos
+    group: bareos
+    mode: 0750
+    recurse: yes
+
+- name: "Creating messages directory"
+  file:
+    path: /etc/bareos/bareos-fd.d/messages
+    state: directory
+    owner: bareos
+    group: bareos
+    mode: 0750
+    recurse: yes
+
+- name: "Загрузка конфигурационных файлов Bareos-fd"
+  template: 
+    src: "{{ item.src }}" 
+    dest: "{{ item.dest }}" 
+    mode: 0750 
+    owner: bareos
+    group: bareos
+  with_items:
+      - { src: '../templates/setup_client_files/myself.conf.j2', dest: '/etc/bareos/bareos-fd.d/client/myself.conf' }
+      - { src: '../templates/setup_client_files/Standard.conf', dest: '/etc/bareos/bareos-fd.d/messages/Standard.conf' }
+      - { src: '../templates/setup_client_files/bareos-dir.conf.j2', dest: '/etc/bareos/bareos-fd.d/director/bareos-dir.conf' }
+
+- name: Enable bareos client service
+  service: 
+    name: bareos-fd 
+    state: restarted 
+    enabled: yes

@@ -1,0 +1,32 @@
+---
+- name: Установка репозитория bareos
+  copy:
+    src: files/bareos.repo
+    dest: /etc/yum.repos.d/bareos.repo
+    owner: root
+    group: "{{ root_group }}"
+    mode: 0644
+  when: bareos_yum_repo_enabled | bool
+
+- name: Установка bareos
+  package:
+    name: "{{ bareos_package_name }}"
+    state: present
+
+- name: Открыть порт 9102 на клиенте
+  ansible.posix.firewalld:
+    port: 9102/tcp
+    permanent: yes
+    state: enabled
+  when: services_state.ansible_facts.services['firewalld.service'] is defined and services_state.ansible_facts.services['firewalld.service'].status == "enabled"
+# - name: Открыть порт 9102 на клиентe
+#   firewalld:
+#     port: 9102/tcp
+#     permanent: yes
+#     state: enabled
+#   when: services_state.ansible_facts.services['firewalld.service'] is defined and services_state.ansible_facts.services['firewalld.service'].status == "enabled"
+#   notify: firewalld reload
+    
+- name: reload firewalld
+  command: firewall-cmd --reload
+  when: services_state.ansible_facts.services['firewalld.service'] is defined and services_state.ansible_facts.services['firewalld.service'].status == "enabled"

@@ -1,0 +1,33 @@
+---
+# defaults file for /home/nfofilov/Ansible/roles/bareos_client
+
+bareos_mode: ""
+client_hostname: ""
+
+# The name of the bareos package to install.
+bareos_package_name: "bareos-fd"
+
+# Used only for Debian/Ubuntu installation, as the -t option for apt.
+bareos_default_release: ""
+
+# Used only for Redhat installation, enables source Nginx repo.
+bareos_yum_repo_enabled: true
+
+# Может быть одним из этих
+# 20.04
+# 18.04
+# 16.04
+install_bareos_client_bareos_ubuntu_install_version: "20.04"
+bareos_service_state: started
+bareos_service_enabled: true
+
+shedule_name: ""
+schedule_time: ""
+
+# Имя базы данных
+pg_db_name: ""
+# Исключаемые таблицы
+pg_dump_args:
+  - "--exclude-table-data 'application*'"
+  - "--exclude-table-data 'cache*'"
+  - "--exclude-table-data 'rfm_cache'"

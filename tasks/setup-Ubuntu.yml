@@ -1,0 +1,30 @@
+- name: "Add an Apt signing key, uses whichever key is at the URL"
+  become: true
+  apt_key:
+    url: http://download.bareos.org/bareos/release/latest/xUbuntu_{{ install_bareos_client_bareos_ubuntu_install_version }}/Release.key 
+    state: present
+
+- name: "Add specified repository into sources list using specified filename."
+  become: true
+  apt_repository:
+    repo: "deb http://download.bareos.org/bareos/release/latest/xUbuntu_{{ install_bareos_client_bareos_ubuntu_install_version }}/ /\n" 
+    state: present
+    update_cache: yes
+
+- name: "Update Apt package list and install Bareos client"
+  apt:
+    state: present
+    allow_unauthenticated: yes 
+    update_cache: yes
+    pkg:
+      - bareos-filedaemon
+      - bareos-client
+      - bareos-filedaemon-python-plugin
+      - percona-xtrabackup
+
+- name: "Open port 9102 in Ubuntu Firewall to Bareos Server to make a connection"
+  ufw: 
+    rule: allow
+    port: 9102
+  when: is_ufw_installed.rc == 0
+  notify: restart-bareos-fd
