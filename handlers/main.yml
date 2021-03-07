@@ -19,3 +19,4 @@
   command: firewall-cmd --reload
   delegate_to: "backups"
   delegate_facts: true
+

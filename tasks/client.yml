@@ -64,3 +64,4 @@
     name: bareos-fd 
     state: restarted 
     enabled: yes
+

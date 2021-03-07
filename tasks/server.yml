@@ -24,3 +24,4 @@
   with_items:
       - "{{ bareos_backup_type }}" 
   notify: reload_bareos_dir_server
+
