@@ -42,3 +42,4 @@ pg_dump_args:
 # bareos_backup_type: 
 #   - directory
 #   - postgres
+
