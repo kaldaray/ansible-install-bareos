@@ -1,3 +1,6 @@
 ---
-- name: Определение клиент/сервер
-  include_tasks: "{{ bareos_mode }}.yml"
+- name: Установка клиента
+  include_tasks: "client.yml"
+
+- name: Установка заданий на сервере
+  include_tasks: "server.yml"

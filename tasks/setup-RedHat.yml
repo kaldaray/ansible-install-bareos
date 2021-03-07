@@ -19,14 +19,7 @@
     permanent: yes
     state: enabled
   when: services_state.ansible_facts.services['firewalld.service'] is defined and services_state.ansible_facts.services['firewalld.service'].status == "enabled"
-# - name: Открыть порт 9102 на клиентe
-#   firewalld:
-#     port: 9102/tcp
-#     permanent: yes
-#     state: enabled
-#   when: services_state.ansible_facts.services['firewalld.service'] is defined and services_state.ansible_facts.services['firewalld.service'].status == "enabled"
-#   notify: firewalld reload
-    
+
 - name: reload firewalld
   command: firewall-cmd --reload
   when: services_state.ansible_facts.services['firewalld.service'] is defined and services_state.ansible_facts.services['firewalld.service'].status == "enabled"

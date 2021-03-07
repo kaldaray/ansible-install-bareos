@@ -1,27 +1,23 @@
-# Ansible role for install bareos client and add job to server
+# bareos install playbook
+Использование данного плейбука предполагает, что bareos server уже развернут и настроен. Ниже приведены примеры для установки на bareos-client на клиенте и создания job's на сервере.
 
-Your client and server should be defined in ```inventory``` file. Tested on ansible 2.9.3
+В ```host_vars``` для клиента определяются параметры:
+-  ```backup_type``` - тип бэкапа directory  или database. По-умолчанию в роли прописано ```backup_type == "directory"```
+-  ```backup_fileset``` - используется только для бэкапа каталога, указываются каталоги, которые необходимо забэкапить
+-  ```schedule_time``` - время бэкапа. В конфиге по-умолчанию прописан бэкап каждый день.
+-  ```pg_db_name``` - имя базы данных
+- ```pg_dump_args``` - Аргументы для бэкапа БД. По-умолчанию исключают таблицы    
+  - ```application```
+  - ```cache```
+  - ```rfm_cache```
+# Пример плейбука
 
-### How to use
+В данном примере бэкапится каталог
 
 ```sh
----
-# Настройка клиента bareos
-- hosts: webserver  
-  gather_facts: yes
-  become: true
-  roles:
-    - { role: 'bareos_install', bareos_mode: "client", }
-# Настройка сервера bareos
-- hosts: webserver  
+- hosts: %host_name%  
   gather_facts: yes
   become: true  
   roles:
-     - { role: "bareos_install", 
-          delegate_to: "backups", 
-          delegate_facts: true, 
-          bareos_mode: "server", 
-          backup_fileset: "/opt/docker",
-          schedule_time: "14:00"}
+     - bareos_install
 ```
-

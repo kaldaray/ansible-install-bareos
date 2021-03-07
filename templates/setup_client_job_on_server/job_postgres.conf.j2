@@ -1,11 +1,11 @@
 Job {
     # Имя обязательно
-    Name = "{{ ansible_hostname }}_postgres_backup"
-    JobDefs = "DefaultJob"
+    Name = "{{ ansible_hostname }}_postgres"
+    JobDefs = "{{ ansible_hostname }}_postgres_jobdefs"
     Client = {{ ansible_host }}
     Level = Full
-    FileSet = "{{ ansible_hostname }}_fileset"
-    Schedule = "{{ ansible_hostname }}_postgres_schedule"
+    FileSet = "{{ ansible_hostname }}_postgres_fileset"
+    Schedule = Name = "{{ ansible_hostname }}_postgres_schedule"
 
     # This creates a dump of our database in the local filesystem on the client
     RunScript {
@@ -31,13 +31,13 @@ JobDefs {
     Type = Backup
     # Настройка по-умолчанижю
     # Можно использоватеть Full/Differential(since last full)/Incremental(since last incremental)
-    Level = Incremental
+    Level = Full
     # Где будет хранится
     Storage = File
     # Отчеты
     Messages = Standard
     # Хранение пула
-    Pool = Incremental
+    Pool = bareos-pool-Full
     # чем выше приоритет значения, тем ниже оно будет помещено в очередь
     # Самые важные job priority=1 будут стартовать первыми
     Priority = 10
@@ -45,9 +45,9 @@ JobDefs {
     # сделана полная резервная копия, ее можно использовать при восстановлении
     Write Bootstrap = "/var/lib/bareos/%c.bsr"
 
-    Full Backup Pool = Full
-    Differential Backup Pool = Differential
-    Incremental Backup Pool = Incremental
+    # Full Backup Pool = Full
+    # Differential Backup Pool = Differential
+    # Incremental Backup Pool = Incremental
 
 }
 

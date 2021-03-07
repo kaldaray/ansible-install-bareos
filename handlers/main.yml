@@ -1,15 +1,21 @@
 ---
 # handlers file for /home/nfofilov/Ansible/roles/bareos_client
-- name: reload bareos-dir
-  service: 
-    name: bareos-dir
-    state: restarted
+- name: reload_bareos_dir_server
+  delegate_to: "backups"
+  delegate_facts: true
+  command: systemctl reload bareos-dir
 
-- name: restart bareos-fd
+- name: restart_bareos_fd_server
   service: name=bareos-fd state=restarted
+  delegate_to: "backups"
+  delegate_facts: true
 
-- name: reload bareos-fd
+- name: reload_bareos_fd_server
   service: name=bareos-fd state=restarted
+  delegate_to: "backups"
+  delegate_facts: true
 
 - name: firewalld reload
   command: firewall-cmd --reload
+  delegate_to: "backups"
+  delegate_facts: true

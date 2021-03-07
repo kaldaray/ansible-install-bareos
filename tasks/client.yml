@@ -2,7 +2,7 @@
 - name: Получение информации о службах сервера
   service_facts:
   register: services_state
-# Variable setup.
+  
 - name: Импорт переменных
   include_vars: "{{ ansible_os_family }}.yml"
 
@@ -22,7 +22,7 @@
  
 - name: "Creating client directory"
   file:
-    path: /etc/bareos/bareos-fd.d/client
+    path: "{{ bareos_fd }}/client"
     state: directory
     owner: bareos
     group: bareos
@@ -31,7 +31,7 @@
 
 - name: "Creating director directory"
   file:
-    path: /etc/bareos/bareos-fd.d/director
+    path: "{{ bareos_fd }}/director"
     state: directory
     owner: bareos
     group: bareos
@@ -40,7 +40,7 @@
 
 - name: "Creating messages directory"
   file:
-    path: /etc/bareos/bareos-fd.d/messages
+    path: "{{ bareos_fd }}/messages"
     state: directory
     owner: bareos
     group: bareos
@@ -55,9 +55,9 @@
     owner: bareos
     group: bareos
   with_items:
-      - { src: '../templates/setup_client_files/myself.conf.j2', dest: '/etc/bareos/bareos-fd.d/client/myself.conf' }
-      - { src: '../templates/setup_client_files/Standard.conf', dest: '/etc/bareos/bareos-fd.d/messages/Standard.conf' }
-      - { src: '../templates/setup_client_files/bareos-dir.conf.j2', dest: '/etc/bareos/bareos-fd.d/director/bareos-dir.conf' }
+      - { src: '../templates/setup_client_files/myself.conf.j2', dest: '{{ bareos_fd }}/client/myself.conf' }
+      - { src: '../templates/setup_client_files/Standard.conf', dest: '{{ bareos_fd }}/messages/Standard.conf' }
+      - { src: '../templates/setup_client_files/bareos-dir.conf.j2', dest: '{{ bareos_fd }}/director/bareos-dir.conf' }
 
 - name: Enable bareos client service
   service: 

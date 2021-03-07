@@ -1,19 +1,22 @@
 ---
 # defaults file for /home/nfofilov/Ansible/roles/bareos_client
 
-bareos_mode: ""
+# ===================================== Переопределяется в host_vars ========================================= #
 client_hostname: ""
+shedule_name: ""
+schedule_time: ""
+# ============================================================================================================ #
 
-# The name of the bareos package to install.
+# Имя устанавливаемого пакета.
 bareos_package_name: "bareos-fd"
 
-# Used only for Debian/Ubuntu installation, as the -t option for apt.
+# Для установки на Ubuntu
 bareos_default_release: ""
 
-# Used only for Redhat installation, enables source Nginx repo.
+# Используется на CentOS.
 bareos_yum_repo_enabled: true
 
-# Может быть одним из этих
+# Версия Ubuntu
 # 20.04
 # 18.04
 # 16.04
@@ -21,13 +24,21 @@ install_bareos_client_bareos_ubuntu_install_version: "20.04"
 bareos_service_state: started
 bareos_service_enabled: true
 
-shedule_name: ""
-schedule_time: ""
-
+# Путь до bareos-dir
+bareos_dir: "/etc/bareos/bareos-dir.d"
+# Путь до bareos-fd
+bareos_fd: "/etc/bareos/bareos-fd.d"
 # Имя базы данных
-pg_db_name: ""
+pg_db_name: "axicreditclient"
 # Исключаемые таблицы
 pg_dump_args:
   - "--exclude-table-data 'application*'"
   - "--exclude-table-data 'cache*'"
   - "--exclude-table-data 'rfm_cache'"
+
+# Тип бэкапа по-умолчанию
+# Используются следующие значения: directory, database
+# Задается списком
+# bareos_backup_type: 
+#   - directory
+#   - postgres

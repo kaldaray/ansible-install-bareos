@@ -1,28 +1,29 @@
 Job {
     # Имя обязательно
-    Name = "{{ ansible_hostname }}_dir"
-    JobDefs = "{{ ansible_hostname }}_dir_jobdefs"
+    Name = "{{ ansible_hostname }}_directory"
+    JobDefs = "{{ ansible_hostname }}_directory_jobdefs"
     Client = {{ ansible_hostname }}
-    FileSet = "{{ ansible_hostname }}_fileset"
-    Schedule = "{{ ansible_hostname }}_schedule"
+    FileSet = "{{ ansible_hostname }}_directory_fileset"
+    Schedule = "{{ ansible_hostname }}_directory_schedule"
 }
 
 JobDefs {
     # Имя Jobdefs
-    Name = "{{ ansible_hostname }}_dir_jobdefs"
+    Name = "{{ ansible_hostname }}_directory_jobdefs"
     # Тип, можно использовать backup/restore/verify
     Type = Backup
     # Настройка по-умолчанижю
     # Можно использоватеть Full/Differential(since last full)/Incremental(since last incremental)
     Level = Incremental
+    #  bareos_level_backup 
     # Набор файлов
-    FileSet = "{{ ansible_hostname }}_fileset"
+    FileSet = "{{ ansible_hostname }}_directory_fileset"
     # Где будет хранится
     Storage = File
     # Отчеты
     Messages = Standard
     # Хранение пула
-    Pool = Incremental
+    Pool = bareos-pool-Incremental:
     # чем выше приоритет значения, тем ниже оно будет помещено в очередь
     # Самые важные job priority=1 будут стартовать первыми
     Priority = 10
@@ -30,14 +31,14 @@ JobDefs {
     # сделана полная резервная копия, ее можно использовать при восстановлении
     Write Bootstrap = "/var/lib/bareos/%c.bsr"
 
-    Full Backup Pool = Full
-    Differential Backup Pool = Differential
-    Incremental Backup Pool = Incremental
+    # Full Backup Pool = Full
+    # Differential Backup Pool = Differential
+    # Incremental Backup Pool = Incremental
 
 }
 
 FileSet {
-    Name = "{{ ansible_hostname }}_fileset"
+    Name = "{{ ansible_hostname }}_directory_fileset"
     Include {
         Options {
             signature = MD5
@@ -45,13 +46,15 @@ FileSet {
         }
         # Пример
         # /opt/tomcat,/opt
-        File = {{ backup_fileset }}
+    {% for file in bareos_backup_fileset %}
+        File = {{ file }}
+    {% endfor %}
     }
 }
 
 Schedule {
   # Имя задания (обязательно)
-  Name = "{{ ansible_hostname }}_schedule"
+  Name = "{{ ansible_hostname }}_directory_schedule"
 
   # Время запуска
   # Пример 
