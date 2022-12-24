@@ -1,27 +1,14 @@
 ---
-# Добавление пользователя на Bareos server
-- name: Bareos server. Добавление Пользователя
-  delegate_to: "backups"
-  delegate_facts: true
-  template: 
-    src: "{{ item.src }}" 
-    dest: "{{ item.dest }}" 
-    mode: 0640 
-    owner: bareos
-    group: bareos
-  with_items:
-      - { src: 'templates/setup_client_on_server/client-name-fd.conf.j2', dest: '{{ bareos_dir }}/client/{{ client_hostname }}.conf' }
-
+# Добавление пользователя и задания на Bareos server
 - name: Bareos server. Добавление задания для бэкапа
   delegate_to: "backups"
   delegate_facts: true
   template: 
     src: 'templates/setup_client_job_on_server/job_{{ item }}.conf.j2'
-    dest: '{{ bareos_dir }}/job/{{ client_hostname }}_{{ item }}.conf'
-    mode: 0640 
+    dest: '{{ bareos_dir }}/job/{{ ansible_hostname }}_{{ item }}.conf'
+    mode: 0777 
     owner: bareos
     group: bareos
   with_items:
       - "{{ bareos_backup_type }}" 
   notify: reload_bareos_dir_server
-

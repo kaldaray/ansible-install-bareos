@@ -1,0 +1,81 @@
+Job {
+    # Имя обязательно
+    Name = "{{ ansible_hostname }}_postgres"
+    Type = Backup
+    Level = Differential
+    Client = {{ ansible_hostname }}
+    Level = Full
+    FileSet = "{{ ansible_hostname }}_postgres_fileset"
+    Schedule = "Weekly"
+    Storage = File
+    Messages = Standard
+    Pool = "{{ ansible_hostname }}-pool-Differential"
+    Priority = 10
+    Write Bootstrap = "/var/lib/bareos/%c.bsr"
+    Full Backup Pool = "{{ ansible_hostname }}-pool-Full"
+    Differential Backup Pool = "{{ ansible_hostname }}-pool-Differential"
+    #ClientRunBeforeJob = '/bin/sh -c /opt/scripts/postgresql_backup.sh'
+    #ClientRunAfterJob = "rm -f /var/tmp/*.bak"
+
+    # This creates a dump of our database in the local filesystem on the client
+    RunScript {
+        FailJobOnError = Yes
+        RunsOnClient = Yes
+        RunsWhen = Before
+        Command = "/bin/sh -c /opt/scripts/postgresql_backup.sh"
+    }
+
+  # This deletes the dump in our local filesystem on the client
+    RunScript {
+        RunsOnSuccess = Yes
+        RunsOnClient = Yes
+        RunsWhen = After
+        Command = "rm -f /var/tmp/backup/*.bak"
+    }
+}
+
+Client {
+    Name = {{ ansible_hostname }}
+{% if local_ip is defined %}
+    Address = {{ local_ip }}
+{% else %}
+    Address = {{ ansible_host }}
+{% endif %}
+    Password = "{{ backup_storage_pass }}"
+    File Retention = 30 days # 30 days
+    Job Retention = 6 months # six months
+    AutoPrune = no # Prune expired Jobs/Files
+}
+
+FileSet {
+    Name = "{{ ansible_hostname }}_postgres_fileset"
+    Include {
+        Options {
+            signature = MD5
+            compression = gzip
+        }
+        # database dump file
+        File = "/var/tmp/backup/"
+    }
+}
+
+Pool {
+  Name = "{{ ansible_hostname }}-pool-Full"
+  Pool Type = Backup
+  Recycle = yes # Bareos can automatically recycle Volumes
+  AutoPrune = yes # Prune expired volumes
+  Volume Retention = 30 days
+  Maximum Volume Bytes = 30G
+  Maximum Volumes = 100
+  Label Format = "{{ ansible_hostname }}-pool-Full-"
+}
+Pool {
+  Name = "{{ ansible_hostname }}-pool-Differential"
+  Pool Type = Backup
+  Recycle = yes # Bareos can automatically recycle Volumes
+  AutoPrune = yes
+  Volume Retention = 30 days
+  Maximum Volume Bytes = 10G
+  Maximum Volumes = 100
+  Label Format = "{{ ansible_hostname }}-pool-Differential-"
+}

@@ -1,0 +1,80 @@
+Job {
+  Name = "{{ ansible_hostname }}-Full"
+  Type = Backup
+  Level = Differential
+  Client = {{ ansible_hostname }}
+  FileSet = "{{ ansible_hostname }}-fileset"
+  Schedule = "Weekly"
+  Storage = File
+  Messages = Standard
+  Pool = "{{ ansible_hostname }}-Differential"
+  Priority = 10
+  Write Bootstrap = "/var/lib/bareos/%c.bsr"
+  Full Backup Pool = "{{ ansible_hostname }}-Full"
+  Differential Backup Pool = "{{ ansible_hostname }}-Differential"
+}
+Job {
+  Name = "{{ ansible_hostname }}-restore"
+  Type = Restore
+  Client = {{ ansible_hostname }}
+  FileSet = "{{ ansible_hostname }}-fileset"
+  Storage = File
+  Pool = "{{ ansible_hostname }}-Differential"
+  Messages = Standard
+  Where = /tmp
+}
+
+FileSet {
+  Name = "{{ ansible_hostname }}-fileset"
+  Include {
+    Options {
+        compression = GZIP
+        Signature = MD5 # calculate md5 checksum per file
+    }
+    {% for file in bareos_backup_fileset %}
+        File = {{ file }}
+    {% endfor %}
+
+    {% if bareos_exclude_fileset is defined %}
+  }
+    Exclude {
+    {% for file in bareos_exclude_fileset %}
+    File = {{ file }}
+    {% endfor %}    
+    {% endif %}
+  }
+}
+
+Client {
+    Name = {{ ansible_hostname }}
+{% if local_ip is defined %}
+    Address = {{ local_ip }}
+{% else %}
+    Address = {{ ansible_host }}
+{% endif %}
+    Password = "{{ backup_storage_pass }}"
+    File Retention = 30 days # 30 days
+    Job Retention = 6 months # six months
+    AutoPrune = no # Prune expired Jobs/Files
+}
+
+Pool {
+  Name = "{{ ansible_hostname }}-Full"
+  Pool Type = Backup
+  Recycle = yes # Bareos can automatically recycle Volumes
+  AutoPrune = yes # Prune expired volumes
+  Volume Retention = 30 days
+  Maximum Volume Bytes = 30G
+  Maximum Volumes = 100
+  Label Format = "{{ ansible_hostname }}-Full-"
+}
+Pool {
+  Name = "{{ ansible_hostname }}-Differential"
+  Pool Type = Backup
+  Recycle = yes # Bareos can automatically recycle Volumes
+  AutoPrune = yes
+  Volume Retention = 20 days
+  Maximum Volume Bytes = 10G
+  Maximum Volumes = 100
+  Label Format = "{{ ansible_hostname }}-Differential-"
+}

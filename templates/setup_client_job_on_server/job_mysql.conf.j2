@@ -1,0 +1,87 @@
+Job {
+  Name = "{{ ansible_hostname }}-backup-mysql"
+  Type = Backup
+  Level = Incremental
+  Client = "{{ ansible_hostname }}"
+  FileSet = "{{ ansible_hostname }}-fileset-mysql"
+  Schedule = "Weekly"
+  Storage = File
+  Messages = Standard
+  Pool = "{{ ansible_hostname }}-pool-Differential"
+  Priority = 10
+  Write Bootstrap = "/var/lib/bareos/%c.bsr"
+  Full Backup Pool = "{{ ansible_hostname }}-Full"
+  Differential Backup Pool = "{{ ansible_hostname }}-Differential"
+  
+  # This creates a dump of our database in the local filesystem on the client
+  RunScript {
+    FailJobOnError = Yes
+    RunsOnClient = Yes
+    RunsWhen = Before
+    Command = "mysqldump -uroot {{ mysql_db_name }} --result-file=/var/tmp/mariadb_dump.sql"
+  }
+
+  # This deletes the dump in our local filesystem on the client
+  RunScript {
+    RunsOnSuccess = Yes
+    RunsOnClient = Yes
+    RunsWhen = After
+    Command = "rm /var/tmp/mariadb_dump.sql"
+   }
+  
+}
+Job {
+  Name = "{{ ansible_hostname }}-restore-mysql"
+  Type = Restore
+  Client = "{{ ansible_hostname }}"
+  FileSet = "{{ ansible_hostname }}-fileset-mysql"
+  Storage = File
+  Pool = "{{ ansible_hostname }}-pool-Differential"
+  Messages = Standard
+  Where = /
+}
+
+FileSet {
+  Name = "{{ ansible_hostname }}-fileset-mysql"
+  Include {
+    Options {
+        Signature = MD5 # calculate md5 checksum per file
+        compression = GZIP
+    }
+	File = "/var/tmp/mariadb_dump.sql"
+  }
+}
+
+Client {
+    Name = {{ ansible_hostname }}
+{% if local_ip is defined %}
+    Address = {{ local_ip }}
+{% else %}
+    Address = {{ ansible_host }}
+{% endif %}
+    Password = "{{ backup_storage_pass }}"
+    File Retention = 30 days # 30 days
+    Job Retention = 6 months # six months
+    AutoPrune = no # Prune expired Jobs/Files
+}
+
+Pool {
+  Name = "{{ ansible_hostname }}-pool-Full"
+  Pool Type = Backup
+  Recycle = yes # Bareos can automatically recycle Volumes
+  AutoPrune = yes # Prune expired volumes
+  Volume Retention = 365 days
+  Maximum Volume Bytes = 30G
+  Maximum Volumes = 100
+  Label Format = "{{ ansible_hostname }}-pool-Full-"
+}
+Pool {
+  Name = "{{ ansible_hostname }}-pool-Differential"
+  Pool Type = Backup
+  Recycle = yes # Bareos can automatically recycle Volumes
+  AutoPrune = yes
+  Volume Retention = 90 days
+  Maximum Volume Bytes = 10G
+  Maximum Volumes = 100
+  Label Format = "{{ ansible_hostname }}-pool-Differential-"
+}

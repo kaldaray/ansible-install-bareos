@@ -1,5 +1,5 @@
 ---
-# defaults file for /home/nfofilov/Ansible/roles/bareos_client
+# defaults file for /home/fofilov/Ansible/roles/bareos_client
 
 # ===================================== Переопределяется в host_vars ========================================= #
 client_hostname: ""
@@ -8,7 +8,7 @@ schedule_time: ""
 # ============================================================================================================ #
 
 # Имя устанавливаемого пакета.
-bareos_package_name: "bareos-fd"
+bareos_package_name: "bareos-filedaemon"
 
 # Для установки на Ubuntu
 bareos_default_release: ""
@@ -25,21 +25,24 @@ bareos_service_state: started
 bareos_service_enabled: true
 
 # Путь до bareos-dir
-bareos_dir: "/etc/bareos/bareos-dir.d"
+bareos_dir: "/opt/docker/bareos/volumes/bareos/bareos-dir.d"
 # Путь до bareos-fd
-bareos_fd: "/etc/bareos/bareos-fd.d"
+bareos_fd: "/etc/bareos//bareos-fd.d"
+# Путь до директории /opt/scripts
+backup_postgres_script_path: "/opt/scripts"
 # Имя базы данных
-pg_db_name: "axicreditclient"
-# Исключаемые таблицы
-pg_dump_args:
-  - "--exclude-table-data 'application*'"
-  - "--exclude-table-data 'cache*'"
-  - "--exclude-table-data 'rfm_cache'"
-
+# pg_db_name: "axicreditclient"
+# # Исключаемые таблицы
+# pg_dump_args:
+#   - "--exclude-table-data 'application*'"
+#   - "--exclude-table-data 'cache*'"
+#   - "--exclude-table-data 'rfm_cache'"
+# День недели. Может быть:
+# sun | mon | tue | wed | thu | fri | sat | sunday | monday | tuesday | wednesday | thursday | friday | saturday
+bareos_weekday: sun
 # Тип бэкапа по-умолчанию
 # Используются следующие значения: directory, database
 # Задается списком
 # bareos_backup_type: 
 #   - directory
 #   - postgres
-

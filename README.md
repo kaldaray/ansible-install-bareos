@@ -21,4 +21,3 @@
   roles:
      - bareos_install
 ```
-

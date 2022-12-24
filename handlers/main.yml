@@ -3,12 +3,16 @@
 - name: reload_bareos_dir_server
   delegate_to: "backups"
   delegate_facts: true
-  command: systemctl reload bareos-dir
+  # Стандартный демон не поддерживает reload. Перезагрузка производится через bconsole
+  shell: sudo docker restart bareos-dir
 
 - name: restart_bareos_fd_server
   service: name=bareos-fd state=restarted
   delegate_to: "backups"
   delegate_facts: true
+
+- name: restart_bareos_fd_client
+  service: name=bareos-fd state=restarted
 
 - name: reload_bareos_fd_server
   service: name=bareos-fd state=restarted
@@ -20,3 +24,9 @@
   delegate_to: "backups"
   delegate_facts: true
 
+- name: restart_bareos_fd_client
+  service: name=bareos-fd state=restarted
+
+- name: reload_firewalld_client
+  command: firewall-cmd --reload
+  when: services_state.ansible_facts.services['firewalld.service'] is defined and services_state.ansible_facts.services['firewalld.service'].status == "enabled"

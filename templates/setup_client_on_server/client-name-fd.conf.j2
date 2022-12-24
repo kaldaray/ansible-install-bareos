@@ -1,5 +1,10 @@
+#
 Client {
     Name = {{ ansible_hostname }}
+{% if local_ip is defined %}
+    Address = {{ local_ip }}
+{% else %}
     Address = {{ ansible_host }}
+{% endif %}
     Password = "{{ backup_storage_pass }}"
 }

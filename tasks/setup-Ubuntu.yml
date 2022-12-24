@@ -1,15 +1,27 @@
 - name: "Add an Apt signing key, uses whichever key is at the URL"
   become: true
   apt_key:
-    url: http://download.bareos.org/bareos/release/latest/xUbuntu_{{ install_bareos_client_bareos_ubuntu_install_version }}/Release.key 
+    url: http://download.bareos.org/bareos/release/21/xUbuntu_20.04/Release.key
     state: present
 
 - name: "Add specified repository into sources list using specified filename."
   become: true
   apt_repository:
-    repo: "deb http://download.bareos.org/bareos/release/latest/xUbuntu_{{ install_bareos_client_bareos_ubuntu_install_version }}/ /\n" 
+    repo: "deb https://download.bareos.org/bareos/release/21/xUbuntu_20.04 /\n" 
     state: present
     update_cache: yes
+    
+# - name: add the Bareos repository
+#   ansible.builtin.command: wget -O /etc/apt/sources.list.d/bareos.list https://download.bareos.org/bareos/release/21/xUbuntu_20.04/bareos.list
+
+# - name: add package key
+#   ansible.builtin.command: wget -q https://download.bareos.org/bareos/release/21/xUbuntu_20.04/Release.key -O- | apt-key add -
+
+# - name: Download file and force basic auth
+#   get_url:
+#     url: https://download.bareos.org/bareos/release/21/xUbuntu_20.04
+#     dest: /etc/apt/sources.list.d/bareos.list
+#     force_basic_auth: yes
 
 - name: "Update Apt package list and install Bareos client"
   apt:
@@ -19,12 +31,17 @@
     pkg:
       - bareos-filedaemon
       - bareos-client
-      - bareos-filedaemon-python-plugin
-      - percona-xtrabackup
+
+- name: check whether ufw status is active
+  command: ufw status
+  changed_when: False
+  ignore_errors: True
+  register: ufw_check
 
 - name: "Open port 9102 in Ubuntu Firewall to Bareos Server to make a connection"
   ufw: 
     rule: allow
     port: 9102
-  when: is_ufw_installed.rc == 0
-  notify: restart-bareos-fd
+    from_ip: 185.47.36.19
+  when: "'inactive' not in ufw_check.stdout"
+  notify: restart_bareos_fd_client

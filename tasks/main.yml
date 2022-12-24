@@ -4,4 +4,3 @@
 
 - name: Установка заданий на сервере
   include_tasks: "server.yml"
-

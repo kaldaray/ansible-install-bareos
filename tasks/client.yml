@@ -59,9 +59,35 @@
       - { src: '../templates/setup_client_files/Standard.conf', dest: '{{ bareos_fd }}/messages/Standard.conf' }
       - { src: '../templates/setup_client_files/bareos-dir.conf.j2', dest: '{{ bareos_fd }}/director/bareos-dir.conf' }
 
-- name: Enable bareos client service
-  service: 
-    name: bareos-fd 
-    state: restarted 
-    enabled: yes
+# - name: "Проверка наличия записи в /etc/hosts для внутренних ландшафтов"
+#   lineinfile:
+#     dest: /etc/hosts
+#     state: present
+#     regexp: '^([0-9]{1,3}.){3}[0-9]{1,3}(\s)*backups'
+#     line: "10.0.1.19 backups"
+#   when:
+#     - local_ip is defined
 
+# - name: "Проверка наличия записи в /etc/hosts для ландшафтов клиентов"
+#   lineinfile:
+#     dest: /etc/hosts
+#     state: present
+#     regexp: '^([0-9]{1,3}.){3}[0-9]{1,3}(\s)*backups'
+#     line: "185.47.36.19 backups"
+#   when:
+#     - local_ip is not defined
+
+- name: "Копирование скрипта postgresql_backup.sh для бэкапа Postgres"
+  include_tasks: client_postgres.yml
+  when: bareos_backup_type == "postgres_full"
+  
+- name: reload_firewalld_client
+  command: firewall-cmd --reload
+  when: services_state.ansible_facts.services['firewalld.service'] is defined and services_state.ansible_facts.services['firewalld.service'].status == "enabled"
+
+- name: Включение службы bareos-fd
+  systemd:
+      name: bareos-fd
+      daemon_reload: yes
+      enabled: yes
+      state: started

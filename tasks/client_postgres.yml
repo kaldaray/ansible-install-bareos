@@ -1,0 +1,17 @@
+---
+- name: Backups. Проверка каталога
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: u=rwX,g=rwX,o=rwX
+  with_items:
+    - "/opt/scripts"
+    - "/opt/scripts/logs"
+
+- name: "Копирование скрипта postgresql_backup.sh для бэкапа Postgres"
+  copy:
+    src: files/postgresql_backup.sh
+    dest: "{{ backup_postgres_script_path }}/postgresql_backup.sh"
+    owner: bareos
+    group: bareos
+    mode: 0754

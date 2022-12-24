@@ -14,7 +14,7 @@ JobDefs {
     Type = Backup
     # Настройка по-умолчанижю
     # Можно использоватеть Full/Differential(since last full)/Incremental(since last incremental)
-    Level = Incremental
+    Level = Differential
     #  bareos_level_backup 
     # Набор файлов
     FileSet = "{{ ansible_hostname }}_directory_fileset"
@@ -23,7 +23,7 @@ JobDefs {
     # Отчеты
     Messages = Standard
     # Хранение пула
-    Pool = bareos-pool-Incremental:
+    Pool = NewPool
     # чем выше приоритет значения, тем ниже оно будет помещено в очередь
     # Самые важные job priority=1 будут стартовать первыми
     Priority = 10
@@ -31,8 +31,8 @@ JobDefs {
     # сделана полная резервная копия, ее можно использовать при восстановлении
     Write Bootstrap = "/var/lib/bareos/%c.bsr"
 
-    # Full Backup Pool = Full
-    # Differential Backup Pool = Differential
+    Full Backup Pool = Full
+    Differential Backup Pool = Differential
     # Incremental Backup Pool = Incremental
 
 }
@@ -50,6 +50,14 @@ FileSet {
         File = {{ file }}
     {% endfor %}
     }
+    {% if bareos_exclude_fileset is defined %}
+
+    Exclude {
+    {% for file in bareos_exclude_fileset %}
+    File = {{ file }}
+    {% endfor %}
+    }    
+    {% endif %}
 }
 
 Schedule {
@@ -59,7 +67,6 @@ Schedule {
   # Время запуска
   # Пример 
   # Run = daily at 02:00
+  Run = Level = Full {{ bareos_weekday }} at {{ schedule_time }}
   Run = daily at {{ schedule_time }}
-
 }
-
